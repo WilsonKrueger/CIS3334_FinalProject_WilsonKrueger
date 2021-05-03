@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "363187230158",
+    "project_id": "finalprojectwilsonkrueger",
+    "storage_bucket": "finalprojectwilsonkrueger.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:363187230158:android:0b1447f4bb80910c94c79f",
+        "android_client_info": {
+          "package_name": "css.final_project_cis3334"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "363187230158-apouv3hkf0c46avialss9ik6qc82ku03.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-9sDnNRBiuoPU_pjaqfxOBFQweFTIRv8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "363187230158-apouv3hkf0c46avialss9ik6qc82ku03.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
