@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'player.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(MyApp());
 }
 
@@ -30,7 +33,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<Player> team = [];
+  //List<Player> team = [];
+  final CollectionReference playerCollectionDB = FirebaseFirestore.instance.collection('PLAYERS');
+
   final TextEditingController _newNameTextField = TextEditingController();
   final TextEditingController _newNumberTextField = TextEditingController();
 
@@ -76,7 +81,10 @@ class _MyHomePageState extends State<MyHomePage> {
       child: ElevatedButton(
           onPressed: () {
             setState(() {
-              team.add(new Player(_newNameTextField.text, _newNumberTextField.text));
+              Player player = new Player();//_newNameTextField.text, _newNumberTextField.text);
+              player.setName(_newNameTextField.text);
+              //team.add(new Player(_newNameTextField.text, _newNumberTextField.text));
+              FirebaseFirestore.instance.;
               _newNumberTextField.clear();
               _newNameTextField.clear();
             });
