@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+
+import 'authentication.dart';
 import 'player.dart';
 
 Future<void> main() async {
@@ -33,18 +37,13 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  //List<Player> team = [];
-  final CollectionReference playerCollectionDB = FirebaseFirestore.instance.collection('PLAYERS');
+  CollectionReference playerCollectionDB;// = FirebaseFirestore.instance.collection('PLAYERS');
 
   final TextEditingController _newNameTextField = TextEditingController();
   final TextEditingController _newNumberTextField = TextEditingController();
 
-  _MyHomePageState() {
-/*    team.add(new Player("Chris Paul", 0));
-    team.add(new Player("Lebron James", "23"));
-    team.add(new Player("Donovan Mitchell ", "45"));
-    team.add(new Player("Kawhi Leonard", "2"));*/
-  }
+  String userID;
+  Authentication authentication = new Authentication();
 
   Widget nameTextFieldWidget() {
     return SizedBox(
@@ -81,7 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
       child: ElevatedButton(
           onPressed: () {
             setState(() async {
-              Player player = new Player();//_newNameTextField.text, _newNumberTextField.text);
+              Player player = new Player();
               player.setName(_newNameTextField.text);
               player.setNumber(int.parse(_newNumberTextField.text));
               player.zeroPlayer();
@@ -139,20 +138,6 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-/*  Widget playerListWidget() {
-    return Expanded(
-      child:
-        ListView.builder(
-          itemCount: team.length,
-          itemBuilder: (BuildContext context, int position) {
-            return Card(
-                child: playerTileWidget(position)
-            );
-          }
-        ),
-    );
-  }*/
-
   Widget playerListWidget() {
     return Expanded(
         child:
@@ -174,8 +159,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget mainScreen() {
     return Scaffold(
       body: Container(
         padding: EdgeInsets.symmetric(horizontal: 10, vertical: 50),
@@ -186,9 +170,69 @@ class _MyHomePageState extends State<MyHomePage> {
             playerInputWidget(),
             SizedBox(height: 40,),
             playerListWidget(),
+            logoutButton(),
           ],
         ),
       ),
+    );
+  }
+
+  Widget loginScreen() {
+    return Scaffold(
+      body: Container(
+        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 50),
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        child: Column(
+          children: [
+            Text("Not Logged in"),
+            ElevatedButton(
+                onPressed: ()
+                async {
+                  await authentication.signInWithGoogle();
+                  userID = authentication.getUserID();
+                },
+                child: Text(
+                  'Log in with Google',
+                  style: TextStyle(fontSize: 20),
+                )
+            ),
+            logoutButton(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget logoutButton() {
+    return ElevatedButton(
+        onPressed: ()
+        async {
+          await FirebaseAuth.instance.signOut();
+        },
+        child: Text(
+          'Logout',
+          style: TextStyle(fontSize: 20),
+        )
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (BuildContext context, AsyncSnapshot<User> snapshot) {
+        if(snapshot.hasData) {
+          print("Main builder -- User exists");
+          userID = FirebaseAuth.instance.currentUser.uid;
+          playerCollectionDB = FirebaseFirestore.instance.collection('USERS').doc(userID).collection('PLAYERS');
+          return mainScreen();
+        }
+        else {
+          print("Main builder -- need to login");
+          return loginScreen();
+        }
+      },
     );
   }
 }
