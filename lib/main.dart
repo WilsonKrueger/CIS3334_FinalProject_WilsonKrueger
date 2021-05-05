@@ -40,10 +40,10 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _newNumberTextField = TextEditingController();
 
   _MyHomePageState() {
-    team.add(new Player("Chris Paul", "3"));
+/*    team.add(new Player("Chris Paul", 0));
     team.add(new Player("Lebron James", "23"));
     team.add(new Player("Donovan Mitchell ", "45"));
-    team.add(new Player("Kawhi Leonard", "2"));
+    team.add(new Player("Kawhi Leonard", "2"));*/
   }
 
   Widget nameTextFieldWidget() {
@@ -80,11 +80,13 @@ class _MyHomePageState extends State<MyHomePage> {
     return SizedBox(
       child: ElevatedButton(
           onPressed: () {
-            setState(() {
+            setState(() async {
               Player player = new Player();//_newNameTextField.text, _newNumberTextField.text);
               player.setName(_newNameTextField.text);
+              player.setNumber(int.parse(_newNumberTextField.text));
+              player.zeroPlayer();
               //team.add(new Player(_newNameTextField.text, _newNumberTextField.text));
-              FirebaseFirestore.instance.;
+              await playerCollectionDB.add({'Player': player.toJson()});
               _newNumberTextField.clear();
               _newNameTextField.clear();
             });
@@ -118,22 +120,26 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget playerTileWidget(position) {
+  Widget playerTileWidget(snapshot, position) {
+    Map<String, dynamic> playerListMap = snapshot.data.docs[position]['Player'];
+    Player player = Player.fromJson(playerListMap);
     return ListTile(
         leading: Icon(Icons.sports_basketball),
-        title: Text(team[position].getDescription()),
+        title: Text(player.getDescription()),
         trailing: ElevatedButton (
           child: Icon(Icons.delete),
           onPressed: () {
             setState(() {
-              team.removeAt(position);
+              String playerId = snapshot.data.docs[position].id;
+              playerCollectionDB.doc(playerId).delete();
+              //team.removeAt(position);
             });
           },
         ),
     );
   }
 
-  Widget playerListWidget() {
+/*  Widget playerListWidget() {
     return Expanded(
       child:
         ListView.builder(
@@ -144,6 +150,27 @@ class _MyHomePageState extends State<MyHomePage> {
             );
           }
         ),
+    );
+  }*/
+
+  Widget playerListWidget() {
+    return Expanded(
+        child:
+        StreamBuilder(stream: playerCollectionDB.snapshots(),
+            builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+              if (snapshot.hasData) {             // initially we won't have the Firestore data.  Only display the list once the async call returns data
+                return ListView.builder(
+                    itemCount: snapshot.data.docs.length,
+                    itemBuilder: (BuildContext context, int position) {
+                      return Card(
+                          child: playerTileWidget(snapshot,position)
+                      );
+                    }
+                );
+              } else {
+                return Text("Getting data from the cloud");
+              }
+            })
     );
   }
 
