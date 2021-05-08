@@ -1,165 +1,375 @@
-//
-// import 'package:flutter/material.dart';
-// //import 'package:firebase_auth/firebase_auth.dart';        // for Firebase Authentication
-// import 'package:cloud_firestore/cloud_firestore.dart';    // for Firebase Firestore
-//
-// import 'player.dart';
-//
-// class PlayerDisplay extends StatefulWidget {
-//
-//   String playerID;
-//   // define a constructor that saves the position into the variable above
-//   @override
-//   PlayerDisplay({Key key, @required this.playerID}) : super(key: key);
-//
-//   @override
-//   _PlayerDisplayState createState() => _PlayerDisplayState();
-// }
-//
-// class _PlayerDisplayState extends State<PlayerDisplay> {
-//
-//   String userID;
-//   String playerID;
-//   Player player;
-//   DocumentSnapshot documentSnapshot;
-//   DocumentReference playerFireStoreDoc;
-//
-//   @override
-//   initState() {
-//     //userID = FirebaseAuth.instance.currentUser.uid;
-//     playerID = widget.playerID;     // get player ID that was passed into this widget
-//     playerFireStoreDoc = FirebaseFirestore.instance.collection('PLAYERS').doc(playerID);
-//     playerFireStoreDoc.get()
-//         .then((documentSnapshot) {
-//       if (documentSnapshot.exists) {
-//         setState(() {
-//           Map<String, dynamic> playerMap = documentSnapshot
-//               .data()['Player'];
-//           player = Player.fromJson(playerMap);
-//         });
-//       }
-//     });
-//   }
-//
-//   Widget nameTextFieldWidget() {
-//     return SizedBox(
-//       width: MediaQuery.of(context).size.width / 1.7,
-//       child: TextField(
-//         controller: _newItemNameTextField,
-//         style: TextStyle(fontSize: 22, color: Colors.black),
-//         decoration: InputDecoration(
-//           hintText: "Name",
-//           hintStyle: TextStyle(fontSize: 22, color: Colors.black),
-//         ),
-//       ),
-//     );
-//   }
-//   Widget quantityTextFieldWidget() {
-//     return SizedBox(
-//       width: MediaQuery.of(context).size.width / 1.7,
-//       child: TextField(
-//         controller: _newItemQuantityTextField,
-//         style: TextStyle(fontSize: 22, color: Colors.black),
-//         decoration: InputDecoration(
-//           hintText: "Quantity",
-//           hintStyle: TextStyle(fontSize: 22, color: Colors.black),
-//         ),
-//       ),
-//     );
-//   }
-//
-//   Widget addButtonWidget() {
-//     return SizedBox(
-//       child: ElevatedButton(
-//           onPressed: () async {
-//             String name = _newItemNameTextField.text.toString();
-//             int quanity = int.parse(_newItemQuantityTextField.text.toString());
-//             ListItem item = new ListItem(itemName: name, quantity: quanity );
-//             setState(() {
-//               itemList.add(item);              // add new item to local copy of the itemList
-//             });
-//             await listFireStoreDoc.set({'ShoppingList': shoppingList.toJson()});         // Update the shopping list in Firestore with the new itemList included
-//             _newItemNameTextField.clear();
-//             _newItemQuantityTextField.clear();
-//           },
-//           child: Text(
-//             'Add Data',
-//             style: TextStyle(fontSize: 20),
-//           )),
-//     );
-//   }
-//
-//   Widget detailInputWidget() {
-//     return Column(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       mainAxisAlignment: MainAxisAlignment.spaceAround,
-//       children: [
-//         nameTextFieldWidget(),
-//         quantityTextFieldWidget(),
-//         addButtonWidget(),
-//       ],
-//     );
-//   }
-//
-//   Widget detailTileWidget(position) {
-//     return ListTile(
-//       leading: Icon(Icons.check_box),
-//       title: Text(itemList[position].itemName),
-//       subtitle: Text('Quantity = ${itemList[position].quantity}'),
-//       onLongPress: () async {
-//         print("You long pressed at postion =  $position");
-//         setState(() {
-//           itemList.removeAt(position);              // remove item from local copy of the itemList
-//         });
-//         await listFireStoreDoc.set({'ShoppingList': shoppingList.toJson()});        // Update the shopping list in Firestore with the new itemList included
-//       },
-//     );
-//   }
-//
-//   Widget detailListWidget() {
-//     return Expanded(
-//       child:
-//       ListView.builder(
-//         itemCount: itemList.length,
-//         itemBuilder: (BuildContext context, int position) {
-//           return Card(
-//               child: detailTileWidget(position)
-//           );
-//         },
-//       ),
-//     );
-//   }
-//
-//   Widget backButton() {
-//     return ElevatedButton(
-//       onPressed: () {
-//         Navigator.pop(context);
-//       },
-//       child: Text('Go back!'),
-//     );
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text("Details ${widget.listID}"),
-//       ),
-//       body: Container(
-//         color: Colors.lime,
-//         padding: EdgeInsets.symmetric(horizontal: 10, vertical: 50),
-//         height: MediaQuery.of(context).size.height,
-//         width: MediaQuery.of(context).size.width,
-//         child: Column(
-//           children: [
-//             Text("Details"),
-//             detailInputWidget(),
-//             SizedBox(height: 40,),
-//             detailListWidget(),
-//             backButton(),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
+
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';        // for Firebase Authentication
+import 'package:cloud_firestore/cloud_firestore.dart';    // for Firebase Firestore
+
+import 'player.dart';
+
+class PlayerDisplay extends StatefulWidget {
+
+  String playerID;
+  // define a constructor that saves the position into the variable above
+  @override
+  PlayerDisplay({Key key, @required this.playerID}) : super(key: key);
+
+  @override
+  _PlayerDisplayState createState() => _PlayerDisplayState();
+}
+
+class _PlayerDisplayState extends State<PlayerDisplay> {
+
+  String userID;
+  String playerID;
+  Player player;
+  DocumentSnapshot documentSnapshot;
+  DocumentReference playerFireStoreDoc;
+  Map<String, dynamic> playerMap;
+
+  @override
+  initState() {
+    userID = FirebaseAuth.instance.currentUser.uid;
+    playerID = widget.playerID;     // get player ID that was passed into this widget
+    playerFireStoreDoc = FirebaseFirestore.instance.collection('USERS').doc(userID).collection('PLAYERS').doc(playerID);
+    playerFireStoreDoc.get()
+        .then((documentSnapshot) {
+      if (documentSnapshot.exists) {
+        setState(() {
+          playerMap = documentSnapshot
+              .data()['Player'];
+          player = Player.fromJson(playerMap);
+        });
+      }
+    });
+  }
+
+  Widget header() {
+    return Text(
+        player.getDescription(),
+        style: TextStyle(fontSize: 35),
+    );
+  }
+
+  Widget playerPoints() {
+    return Column(
+      children: [
+        Text(
+            "Points",
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+                onPressed: () {
+                  if(player.points <= 0)
+                  {
+                    return null;
+                  }
+                  else
+                  {
+                    setState(() {
+                      player.points--;
+                      playerFireStoreDoc.set({'Player': player.toJson()});
+                    });
+                  }
+                },
+                child: Icon(Icons.exposure_minus_1)
+            ),
+            SizedBox(width: 25),
+            Text(
+              player.points.toString(),
+              style: TextStyle(fontSize: 20),
+            ),
+            SizedBox(width: 25),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  player.points++;
+                  playerFireStoreDoc.set({'Player': player.toJson()});
+                });
+              },
+              child: Icon(Icons.plus_one),
+            ),
+          ],
+        ),
+        SizedBox(height: 10),
+      ],
+    );
+  }
+
+  Widget playerFouls() {
+    return Column(
+      children: [
+        Text(
+          "Fouls",
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+                onPressed: () {
+                  if(player.fouls <= 0)
+                  {
+                    return null;
+                  }
+                  else
+                  {
+                    setState(() {
+                      player.fouls--;
+                      playerFireStoreDoc.set({'Player': player.toJson()});
+                    });
+                  }
+                },
+                child: Icon(Icons.exposure_minus_1)
+            ),
+            SizedBox(width: 25),
+            Text(
+              player.fouls.toString(),
+              style: TextStyle(fontSize: 20,),
+            ),
+            SizedBox(width: 25),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  player.fouls++;
+                  playerFireStoreDoc.set({'Player': player.toJson()});
+                });
+              },
+              child: Icon(Icons.plus_one),
+            ),
+          ],
+        ),
+        SizedBox(height: 10),
+      ],
+    );
+  }
+
+  Widget playerRebounds() {
+    return Column(
+      children: [
+        Text(
+          "Rebounds",
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+                onPressed: () {
+                  if(player.rebounds <= 0)
+                  {
+                    return null;
+                  }
+                  else
+                  {
+                    setState(() {
+                      player.rebounds--;
+                      playerFireStoreDoc.set({'Player': player.toJson()});
+                    });
+                  }
+                },
+                child: Icon(Icons.exposure_minus_1)
+            ),
+            SizedBox(width: 25),
+            Text(
+              player.rebounds.toString(),
+              style: TextStyle(fontSize: 20,),
+            ),
+            SizedBox(width: 25),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  player.rebounds++;
+                  playerFireStoreDoc.set({'Player': player.toJson()});
+                });
+              },
+              child: Icon(Icons.plus_one),
+            ),
+          ],
+        ),
+        SizedBox(height: 10),
+      ],
+    );
+  }
+
+  Widget playerAssists() {
+    return Column(
+      children: [
+        Text(
+          "Assists",
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+                onPressed: () {
+                  if(player.assists <= 0)
+                  {
+                    return null;
+                  }
+                  else
+                  {
+                    setState(() {
+                      player.assists--;
+                      playerFireStoreDoc.set({'Player': player.toJson()});
+                    });
+                  }
+                },
+                child: Icon(Icons.exposure_minus_1)
+            ),
+            SizedBox(width: 25),
+            Text(
+              player.assists.toString(),
+              style: TextStyle(fontSize: 20,),
+            ),
+            SizedBox(width: 25),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  player.assists++;
+                  playerFireStoreDoc.set({'Player': player.toJson()});
+                });
+              },
+              child: Icon(Icons.plus_one),
+            ),
+          ],
+        ),
+        SizedBox(height: 10),
+      ],
+    );
+  }
+
+  Widget playerSteals() {
+    return Column(
+      children: [
+        Text(
+          "Steals",
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+                onPressed: () {
+                  if(player.steals <= 0)
+                  {
+                    return null;
+                  }
+                  else
+                  {
+                    setState(() {
+                      player.steals--;
+                      playerFireStoreDoc.set({'Player': player.toJson()});
+                    });
+                  }
+                },
+                child: Icon(Icons.exposure_minus_1)
+            ),
+            SizedBox(width: 25),
+            Text(
+              player.steals.toString(),
+              style: TextStyle(fontSize: 20,),
+            ),
+            SizedBox(width: 25),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  player.steals++;
+                  playerFireStoreDoc.set({'Player': player.toJson()});
+                });
+              },
+              child: Icon(Icons.plus_one),
+            ),
+          ],
+        ),
+        SizedBox(height: 10),
+      ],
+    );
+  }
+
+  Widget playerBlocks() {
+    return Column(
+      children: [
+        Text(
+          "Blocks",
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+                onPressed: () {
+                  if(player.blocks <= 0)
+                    {
+                      return null;
+                    }
+                  else
+                    {
+                      setState(() {
+                        player.blocks--;
+                        playerFireStoreDoc.set({'Player': player.toJson()});
+                      });
+                    }
+                },
+                child: Icon(Icons.exposure_minus_1)
+            ),
+            SizedBox(width: 25),
+            Text(
+              player.blocks.toString(),
+              style: TextStyle(fontSize: 20,),
+            ),
+            SizedBox(width: 25),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  player.blocks++;
+                  playerFireStoreDoc.set({'Player': player.toJson()});
+                });
+              },
+              child: Icon(Icons.plus_one),
+            ),
+          ],
+        ),
+        SizedBox(height: 10),
+      ],
+    );
+  }
+
+  Widget backButton() {
+    return ElevatedButton(
+      onPressed: () {
+        Navigator.pop(context);
+      },
+      child: Text('Back'),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Details ${widget.playerID}"),
+      ),
+      body: Container(
+        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        child: Column(
+          children: [
+            header(),
+            SizedBox(height: 20),
+            playerPoints(),
+            playerFouls(),
+            playerRebounds(),
+            playerAssists(),
+            playerSteals(),
+            playerBlocks(),
+            backButton(),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -6,6 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 import 'authentication.dart';
 import 'player.dart';
+import 'player_display.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +21,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Basketball Stats',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.green,
       ),
       home: MyHomePage(title: 'Home Page'),
     );
@@ -125,6 +126,12 @@ class _MyHomePageState extends State<MyHomePage> {
     return ListTile(
         leading: Icon(Icons.sports_basketball),
         title: Text(player.getDescription()),
+        onTap: () {
+          setState(() async {
+            String playerID = snapshot.data.docs[position].id;
+            await Navigator.push(context, MaterialPageRoute(builder: (context) => PlayerDisplay(playerID: playerID,)));
+          });
+        },
         trailing: ElevatedButton (
           child: Icon(Icons.delete),
           onPressed: () {
