@@ -50,7 +50,7 @@ class _PlayerDisplayState extends State<PlayerDisplay> {
     });
   }
 
-  //Retrieved and modified image code from https://www.youtube.com/watch?v=aBoYbMBTu7s
+  //Retrieved and modified image code from https://www.youtube.com/watch?v=aBoYbMBTu7s and https://stackoverflow.com/questions/58224596/convert-file-to-image
   Future getImage() async {
     final IMAGE = await ImagePicker.pickImage(source: ImageSource.gallery);
     image = await convertFileToImage(IMAGE);
@@ -374,12 +374,12 @@ class _PlayerDisplayState extends State<PlayerDisplay> {
       ),
       body: Column(
         children: [
-          Flexible(
+          header(),
+          SizedBox(height: 20),
+          Flexible(      //Code explanation from https://api.flutter.dev/flutter/widgets/Flexible-class.html
             fit: FlexFit.loose,
             child: Column(
               children: [
-                header(),
-                SizedBox(height: 20),
                 playerPoints(),
                 playerFouls(),
                 playerRebounds(),
