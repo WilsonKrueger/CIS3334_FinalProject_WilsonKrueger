@@ -50,6 +50,7 @@ class _PlayerDisplayState extends State<PlayerDisplay> {
     });
   }
 
+  //Retrieved and modified image code from https://www.youtube.com/watch?v=aBoYbMBTu7s
   Future getImage() async {
     final IMAGE = await ImagePicker.pickImage(source: ImageSource.gallery);
     image = await convertFileToImage(IMAGE);
