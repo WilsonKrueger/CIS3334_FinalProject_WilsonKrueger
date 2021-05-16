@@ -1,12 +1,16 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';        // for Firebase Authentication
-import 'package:cloud_firestore/cloud_firestore.dart';    // for Firebase Firestore
+import 'package:firebase_auth/firebase_auth.dart'; // for Firebase Authentication
+import 'package:cloud_firestore/cloud_firestore.dart'; // for Firebase Firestore
+
+import 'package:image_picker/image_picker.dart';
 
 import 'player.dart';
 
 class PlayerDisplay extends StatefulWidget {
-
   String playerID;
   // define a constructor that saves the position into the variable above
   @override
@@ -17,35 +21,70 @@ class PlayerDisplay extends StatefulWidget {
 }
 
 class _PlayerDisplayState extends State<PlayerDisplay> {
-
   String userID;
   String playerID;
   Player player;
   DocumentSnapshot documentSnapshot;
   DocumentReference playerFireStoreDoc;
   Map<String, dynamic> playerMap;
+  Future<File> imageFile;
+  Image image;
 
   @override
   initState() {
     userID = FirebaseAuth.instance.currentUser.uid;
-    playerID = widget.playerID;     // get player ID that was passed into this widget
-    playerFireStoreDoc = FirebaseFirestore.instance.collection('USERS').doc(userID).collection('PLAYERS').doc(playerID);
-    playerFireStoreDoc.get()
-        .then((documentSnapshot) {
+    playerID =
+        widget.playerID; // get player ID that was passed into this widget
+    playerFireStoreDoc = FirebaseFirestore.instance
+        .collection('USERS')
+        .doc(userID)
+        .collection('PLAYERS')
+        .doc(playerID);
+    playerFireStoreDoc.get().then((documentSnapshot) {
       if (documentSnapshot.exists) {
         setState(() {
-          playerMap = documentSnapshot
-              .data()['Player'];
+          playerMap = documentSnapshot.data()['Player'];
           player = Player.fromJson(playerMap);
         });
       }
     });
   }
 
+  Future getImage() async {
+    final IMAGE = await ImagePicker.pickImage(source: ImageSource.gallery);
+    image = await convertFileToImage(IMAGE);
+    setState(() {});
+  }
+
+  Future<Image> convertFileToImage(File picture) async {
+    List<int> imageBase64 = picture.readAsBytesSync();
+    String imageAsString = base64Encode(imageBase64);
+    Uint8List uint8list = base64.decode(imageAsString);
+    Image image = Image.memory(uint8list);
+    return image;
+  }
+
   Widget header() {
-    return Text(
-        player.getDescription(),
-        style: TextStyle(fontSize: 35),
+    return Column(
+      children: [
+        Text(
+          player.name,
+          style: TextStyle(fontSize: 35),
+        ),
+        Row(
+          children: [
+            SizedBox(
+              height: 80,
+              width: 80,
+              child: image == null ? Text("Select Image") : image,
+            ),
+            ElevatedButton(
+              onPressed: getImage,
+              child: Text("Select Headshot Image"),
+            ),
+          ],
+        )
+      ],
     );
   }
 
@@ -53,28 +92,24 @@ class _PlayerDisplayState extends State<PlayerDisplay> {
     return Column(
       children: [
         Text(
-            "Points",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          "Points",
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton(
                 onPressed: () {
-                  if(player.points <= 0)
-                  {
+                  if (player.points <= 0) {
                     return null;
-                  }
-                  else
-                  {
+                  } else {
                     setState(() {
                       player.points--;
                       playerFireStoreDoc.set({'Player': player.toJson()});
                     });
                   }
                 },
-                child: Icon(Icons.exposure_minus_1)
-            ),
+                child: Icon(Icons.exposure_minus_1)),
             SizedBox(width: 25),
             Text(
               player.points.toString(),
@@ -92,7 +127,6 @@ class _PlayerDisplayState extends State<PlayerDisplay> {
             ),
           ],
         ),
-        SizedBox(height: 10),
       ],
     );
   }
@@ -109,24 +143,22 @@ class _PlayerDisplayState extends State<PlayerDisplay> {
           children: [
             ElevatedButton(
                 onPressed: () {
-                  if(player.fouls <= 0)
-                  {
+                  if (player.fouls <= 0) {
                     return null;
-                  }
-                  else
-                  {
+                  } else {
                     setState(() {
                       player.fouls--;
                       playerFireStoreDoc.set({'Player': player.toJson()});
                     });
                   }
                 },
-                child: Icon(Icons.exposure_minus_1)
-            ),
+                child: Icon(Icons.exposure_minus_1)),
             SizedBox(width: 25),
             Text(
               player.fouls.toString(),
-              style: TextStyle(fontSize: 20,),
+              style: TextStyle(
+                fontSize: 20,
+              ),
             ),
             SizedBox(width: 25),
             ElevatedButton(
@@ -140,7 +172,6 @@ class _PlayerDisplayState extends State<PlayerDisplay> {
             ),
           ],
         ),
-        SizedBox(height: 10),
       ],
     );
   }
@@ -157,24 +188,22 @@ class _PlayerDisplayState extends State<PlayerDisplay> {
           children: [
             ElevatedButton(
                 onPressed: () {
-                  if(player.rebounds <= 0)
-                  {
+                  if (player.rebounds <= 0) {
                     return null;
-                  }
-                  else
-                  {
+                  } else {
                     setState(() {
                       player.rebounds--;
                       playerFireStoreDoc.set({'Player': player.toJson()});
                     });
                   }
                 },
-                child: Icon(Icons.exposure_minus_1)
-            ),
+                child: Icon(Icons.exposure_minus_1)),
             SizedBox(width: 25),
             Text(
               player.rebounds.toString(),
-              style: TextStyle(fontSize: 20,),
+              style: TextStyle(
+                fontSize: 20,
+              ),
             ),
             SizedBox(width: 25),
             ElevatedButton(
@@ -188,7 +217,6 @@ class _PlayerDisplayState extends State<PlayerDisplay> {
             ),
           ],
         ),
-        SizedBox(height: 10),
       ],
     );
   }
@@ -205,24 +233,22 @@ class _PlayerDisplayState extends State<PlayerDisplay> {
           children: [
             ElevatedButton(
                 onPressed: () {
-                  if(player.assists <= 0)
-                  {
+                  if (player.assists <= 0) {
                     return null;
-                  }
-                  else
-                  {
+                  } else {
                     setState(() {
                       player.assists--;
                       playerFireStoreDoc.set({'Player': player.toJson()});
                     });
                   }
                 },
-                child: Icon(Icons.exposure_minus_1)
-            ),
+                child: Icon(Icons.exposure_minus_1)),
             SizedBox(width: 25),
             Text(
               player.assists.toString(),
-              style: TextStyle(fontSize: 20,),
+              style: TextStyle(
+                fontSize: 20,
+              ),
             ),
             SizedBox(width: 25),
             ElevatedButton(
@@ -236,7 +262,6 @@ class _PlayerDisplayState extends State<PlayerDisplay> {
             ),
           ],
         ),
-        SizedBox(height: 10),
       ],
     );
   }
@@ -253,24 +278,22 @@ class _PlayerDisplayState extends State<PlayerDisplay> {
           children: [
             ElevatedButton(
                 onPressed: () {
-                  if(player.steals <= 0)
-                  {
+                  if (player.steals <= 0) {
                     return null;
-                  }
-                  else
-                  {
+                  } else {
                     setState(() {
                       player.steals--;
                       playerFireStoreDoc.set({'Player': player.toJson()});
                     });
                   }
                 },
-                child: Icon(Icons.exposure_minus_1)
-            ),
+                child: Icon(Icons.exposure_minus_1)),
             SizedBox(width: 25),
             Text(
               player.steals.toString(),
-              style: TextStyle(fontSize: 20,),
+              style: TextStyle(
+                fontSize: 20,
+              ),
             ),
             SizedBox(width: 25),
             ElevatedButton(
@@ -284,7 +307,6 @@ class _PlayerDisplayState extends State<PlayerDisplay> {
             ),
           ],
         ),
-        SizedBox(height: 10),
       ],
     );
   }
@@ -301,24 +323,22 @@ class _PlayerDisplayState extends State<PlayerDisplay> {
           children: [
             ElevatedButton(
                 onPressed: () {
-                  if(player.blocks <= 0)
-                    {
-                      return null;
-                    }
-                  else
-                    {
-                      setState(() {
-                        player.blocks--;
-                        playerFireStoreDoc.set({'Player': player.toJson()});
-                      });
-                    }
+                  if (player.blocks <= 0) {
+                    return null;
+                  } else {
+                    setState(() {
+                      player.blocks--;
+                      playerFireStoreDoc.set({'Player': player.toJson()});
+                    });
+                  }
                 },
-                child: Icon(Icons.exposure_minus_1)
-            ),
+                child: Icon(Icons.exposure_minus_1)),
             SizedBox(width: 25),
             Text(
               player.blocks.toString(),
-              style: TextStyle(fontSize: 20,),
+              style: TextStyle(
+                fontSize: 20,
+              ),
             ),
             SizedBox(width: 25),
             ElevatedButton(
@@ -332,7 +352,6 @@ class _PlayerDisplayState extends State<PlayerDisplay> {
             ),
           ],
         ),
-        SizedBox(height: 10),
       ],
     );
   }
@@ -350,25 +369,27 @@ class _PlayerDisplayState extends State<PlayerDisplay> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Details ${widget.playerID}"),
+        title: Text("Player Details"),
       ),
-      body: Container(
-        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
-        child: Column(
-          children: [
-            header(),
-            SizedBox(height: 20),
-            playerPoints(),
-            playerFouls(),
-            playerRebounds(),
-            playerAssists(),
-            playerSteals(),
-            playerBlocks(),
-            backButton(),
-          ],
-        ),
+      body: Column(
+        children: [
+          Flexible(
+            fit: FlexFit.loose,
+            child: Column(
+              children: [
+                header(),
+                SizedBox(height: 20),
+                playerPoints(),
+                playerFouls(),
+                playerRebounds(),
+                playerAssists(),
+                playerSteals(),
+                playerBlocks(),
+                backButton(),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -38,7 +38,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  CollectionReference playerCollectionDB;// = FirebaseFirestore.instance.collection('PLAYERS');
+  CollectionReference
+      playerCollectionDB; // = FirebaseFirestore.instance.collection('PLAYERS');
 
   final TextEditingController _newNameTextField = TextEditingController();
   final TextEditingController _newNumberTextField = TextEditingController();
@@ -51,7 +52,8 @@ class _MyHomePageState extends State<MyHomePage> {
       width: MediaQuery.of(context).size.width - 25,
       child: TextField(
         controller: _newNameTextField,
-        textCapitalization: TextCapitalization.words,           //Retrieved this line from https://stackoverflow.com/questions/49238908/flutter-textfield-value-always-uppercase-debounce
+        textCapitalization: TextCapitalization
+            .words, //Retrieved this line from https://stackoverflow.com/questions/49238908/flutter-textfield-value-always-uppercase-debounce
         style: TextStyle(fontSize: 22, color: Colors.black),
         decoration: InputDecoration(
           hintText: "Player Name",
@@ -62,17 +64,17 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget numberTextFieldWidget() {
-    return SizedBox (
+    return SizedBox(
       width: 90,
-      child: TextField (
-        controller: _newNumberTextField,
-        keyboardType: TextInputType.number,                     //Retrieved this line from https://stackoverflow.com/questions/49577781/how-to-create-number-input-field-in-flutter
-        style: TextStyle(fontSize: 22, color: Colors.black),
-        decoration: InputDecoration(
-          hintText: "Number",
-          hintStyle: TextStyle(fontSize: 22, color: Colors.grey),
-      )
-    ),
+      child: TextField(
+          controller: _newNumberTextField,
+          keyboardType: TextInputType
+              .number, //Retrieved this line from https://stackoverflow.com/questions/49577781/how-to-create-number-input-field-in-flutter
+          style: TextStyle(fontSize: 22, color: Colors.black),
+          decoration: InputDecoration(
+            hintText: "Number",
+            hintStyle: TextStyle(fontSize: 22, color: Colors.grey),
+          )),
     );
   }
 
@@ -107,12 +109,16 @@ class _MyHomePageState extends State<MyHomePage> {
             nameTextFieldWidget(),
           ],
         ),
-        SizedBox(height: 10,),
+        SizedBox(
+          height: 10,
+        ),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             numberTextFieldWidget(),
-            SizedBox(width: 120,),
+            SizedBox(
+              width: 120,
+            ),
             addButtonWidget(),
           ],
         ),
@@ -124,46 +130,49 @@ class _MyHomePageState extends State<MyHomePage> {
     Map<String, dynamic> playerListMap = snapshot.data.docs[position]['Player'];
     Player player = Player.fromJson(playerListMap);
     return ListTile(
-        leading: Icon(Icons.sports_basketball),
-        title: Text(player.getDescription()),
-        onTap: () {
-          setState(() async {
-            String playerID = snapshot.data.docs[position].id;
-            await Navigator.push(context, MaterialPageRoute(builder: (context) => PlayerDisplay(playerID: playerID,)));
+      leading: Icon(Icons.sports_basketball),
+      title: Text(player.getDescription()),
+      onTap: () {
+        setState(() async {
+          String playerID = snapshot.data.docs[position].id;
+          await Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => PlayerDisplay(
+                        playerID: playerID,
+                      )));
+        });
+      },
+      trailing: ElevatedButton(
+        child: Icon(Icons.delete),
+        onPressed: () {
+          setState(() {
+            String playerId = snapshot.data.docs[position].id;
+            playerCollectionDB.doc(playerId).delete();
+            //team.removeAt(position);
           });
         },
-        trailing: ElevatedButton (
-          child: Icon(Icons.delete),
-          onPressed: () {
-            setState(() {
-              String playerId = snapshot.data.docs[position].id;
-              playerCollectionDB.doc(playerId).delete();
-              //team.removeAt(position);
-            });
-          },
-        ),
+      ),
     );
   }
 
   Widget playerListWidget() {
     return Expanded(
-        child:
-        StreamBuilder(stream: playerCollectionDB.snapshots(),
-            builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-              if (snapshot.hasData) {             // initially we won't have the Firestore data.  Only display the list once the async call returns data
+        child: StreamBuilder(
+            stream: playerCollectionDB.snapshots(),
+            builder:
+                (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+              if (snapshot.hasData) {
+                // initially we won't have the Firestore data.  Only display the list once the async call returns data
                 return ListView.builder(
                     itemCount: snapshot.data.docs.length,
                     itemBuilder: (BuildContext context, int position) {
-                      return Card(
-                          child: playerTileWidget(snapshot,position)
-                      );
-                    }
-                );
+                      return Card(child: playerTileWidget(snapshot, position));
+                    });
               } else {
                 return Text("Getting data from the cloud");
               }
-            })
-    );
+            }));
   }
 
   Widget mainScreen() {
@@ -175,7 +184,9 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           children: [
             playerInputWidget(),
-            SizedBox(height: 40,),
+            SizedBox(
+              height: 40,
+            ),
             playerListWidget(),
             logoutButton(),
           ],
@@ -194,16 +205,14 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             Text("Not Logged in"),
             ElevatedButton(
-                onPressed: ()
-                async {
+                onPressed: () async {
                   await authentication.signInWithGoogle();
                   userID = authentication.getUserID();
                 },
                 child: Text(
                   'Log in with Google',
                   style: TextStyle(fontSize: 20),
-                )
-            ),
+                )),
             logoutButton(),
           ],
         ),
@@ -213,15 +222,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget logoutButton() {
     return ElevatedButton(
-        onPressed: ()
-        async {
+        onPressed: () async {
           await FirebaseAuth.instance.signOut();
         },
         child: Text(
           'Logout',
           style: TextStyle(fontSize: 20),
-        )
-    );
+        ));
   }
 
   @override
@@ -229,13 +236,15 @@ class _MyHomePageState extends State<MyHomePage> {
     return StreamBuilder<User>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (BuildContext context, AsyncSnapshot<User> snapshot) {
-        if(snapshot.hasData) {
+        if (snapshot.hasData) {
           print("Main builder -- User exists");
           userID = FirebaseAuth.instance.currentUser.uid;
-          playerCollectionDB = FirebaseFirestore.instance.collection('USERS').doc(userID).collection('PLAYERS');
+          playerCollectionDB = FirebaseFirestore.instance
+              .collection('USERS')
+              .doc(userID)
+              .collection('PLAYERS');
           return mainScreen();
-        }
-        else {
+        } else {
           print("Main builder -- need to login");
           return loginScreen();
         }
@@ -243,4 +252,3 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-
